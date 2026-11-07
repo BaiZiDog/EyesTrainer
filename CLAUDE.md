@@ -34,7 +34,13 @@ EYESTRAINER_DATA_DIR=/tmp/eyestrainer-data .venv/Scripts/python.exe main.py
 
 # syntax check without a configured linter
 .venv/Scripts/python.exe -m compileall -q eyestrainer
+
+# build the onefile EXE and the Inno Setup installer (requires Nuitka/Zig and Inno Setup 6)
+build_exe.bat
+build_installer.bat
 ```
+
+Packaged builds use `%APPDATA%/EyesTrainer/` for settings, logs, and SQLite data; the installer creates that directory with `uninsneveruninstall`. Build artifacts stay in `dist/` (gitignored) and are attached to GitHub releases.
 
 No linter is configured. Runtime dependency is `pygame-ce`; development dependency is `pytest`.
 
