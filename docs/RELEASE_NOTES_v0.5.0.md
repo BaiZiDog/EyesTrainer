@@ -7,7 +7,7 @@
 - `EyesTrainer-Setup-0.5.0.exe` — Inno Setup 安装包（推荐）
 - `EyesTrainer.exe` — Nuitka onefile 便携版
 - `SHA256SUMS.txt` — 产物校验值
-- `使用说明.txt` — 便携版数据目录说明
+- `EyesTrainer-Portable-README.txt` — 便携版数据目录说明
 
 ## 安装
 
