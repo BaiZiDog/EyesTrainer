@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+data/
+build/
+dist/
+*.spec
+*.egg-info/
+artifacts/
+build_nuitka.log
