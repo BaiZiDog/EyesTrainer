@@ -7,6 +7,7 @@
 从 [GitHub Releases](https://github.com/BaiZiDog/EyesTrainer/releases) 下载 `EyesTrainer-Setup-0.5.0.exe`，双击安装。安装包由 Inno Setup 6 生成，支持开始菜单和可选桌面快捷方式。
 
 - 安装版数据保存在 `%APPDATA%\EyesTrainer\`，升级和卸载都不会删除训练记录。
+- 安装向导会显示中英双语 MIT 许可协议。
 - 设置页“数据”标签提供“打开数据目录”按钮。
 - 安装包和 EXE 未做代码签名，Windows SmartScreen 可能提示；可选择“更多信息 → 仍要运行”。
 
@@ -69,6 +70,10 @@ SDL_VIDEODRIVER=dummy .venv/Scripts/python.exe -m pytest tests/test_scene_smoke.
 ```
 
 设计与测量口径见 [docs/DESIGN.md](docs/DESIGN.md)。工程约定见 [CLAUDE.md](CLAUDE.md)。
+
+## 许可协议
+
+项目采用 [MIT 许可协议](LICENSE)。[中文参考译文](LICENSE.zh-CN.md) 仅供阅读；如中英文文本存在歧义，以英文文本为准。安装向导中的许可页同时包含中英文，便携版许可文本随 Release 资产提供。
 
 ## 定位与免责
 

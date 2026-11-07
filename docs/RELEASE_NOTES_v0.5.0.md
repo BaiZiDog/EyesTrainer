@@ -8,13 +8,15 @@
 - `EyesTrainer.exe` — Nuitka onefile 便携版
 - `SHA256SUMS.txt` — 产物校验值
 - `EyesTrainer-Portable-README.txt` — 便携版数据目录说明
+- `EyesTrainer-LICENSE.txt` — 中英双语 MIT 许可协议
 
 ## 安装
 
 1. 运行 `EyesTrainer-Setup-0.5.0.exe`。
-2. 按向导选择安装位置；默认按当前用户安装到 `%LOCALAPPDATA%\Programs\EyesTrainer`。
-3. 可选创建桌面快捷方式；开始菜单会提供程序和“数据目录”快捷方式。
-4. 安装完成后可直接启动。
+2. 阅读并接受中英双语 MIT 许可协议。
+3. 按向导选择安装位置；默认按当前用户安装到 `%LOCALAPPDATA%\Programs\EyesTrainer`。
+4. 可选创建桌面快捷方式；开始菜单会提供程序和“数据目录”快捷方式。
+5. 安装完成后可直接启动。
 
 安装包未做代码签名，Windows SmartScreen 可能提示；可选择“更多信息 → 仍要运行”。
 
@@ -38,6 +40,8 @@
 - SQLite schema v3，完整保留既有训练记录。
 - 历史默认打开最近一次训练；模块选择默认上次使用模块。
 - 鼠标灵敏度可在设置页和模块选择页调整。
+- 休息提醒和训练完成通知通过 Windows 系统托盘弹出，窗口最小化或失焦时仍能显示。
+- 安装向导与安装目录提供中英双语 MIT 许可协议。
 
 ## 环境
 
@@ -47,7 +51,8 @@
 
 ## 验证
 
-- 69 项自动化测试通过
+- 70 项自动化测试通过
+- Windows 托盘通知在窗口最小化状态下返回成功；应用级通知门控有单元测试覆盖
 - onefile EXE 在临时数据目录和默认 `%APPDATA%` 数据目录下均启动成功
 - Inno Setup 安装包执行安装、安装版启动、静默卸载验收
-- 安装包、便携版和校验值随 Release 上传
+- 安装包、便携版、双语许可和校验值随 Release 上传

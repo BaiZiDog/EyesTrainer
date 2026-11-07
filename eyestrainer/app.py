@@ -18,6 +18,7 @@ from .config import AppPaths, SettingsStore, UserSettings
 from .core.audio import Audio
 from .core.font import FontBook
 from .core.input import AimInput
+from .core.notify import WindowsNotifier
 from .core.storage import Storage
 from .core.timing import FramePacer, FrameStats
 from .ui.hud import draw_debug, draw_dim
@@ -88,6 +89,11 @@ class EyeCareTracker:
         if self.accumulated >= minutes * 60:
             self.accumulated = 0.0
             self.overlay_remaining = 20.0
+            self.app.notify_system(
+                "EyesTrainer · 休息提醒",
+                "已训练较长时间，请看向 6 米外至少 20 秒。",
+                force=True,
+            )
             hook = getattr(self.app.current, "on_eye_rest_start", None)
             if callable(hook):
                 hook()
@@ -120,6 +126,14 @@ class App:
         self.frame_budget = 1.0 / 60.0
         self.screen = pygame.Surface((1280, 720))
         self._apply_display(initial=True)
+        self.notifier = WindowsNotifier()
+        self.window_minimized = False
+        try:
+            self.notifier.set_window(
+                int(pygame.display.get_wm_info().get("window", 0))
+            )
+        except pygame.error:
+            pass
 
         self.fonts = FontBook()
         self.theme = make_theme(self.screen.get_width(), self.screen.get_height(), self.fonts)
@@ -210,6 +224,12 @@ class App:
     def apply_display_settings(self) -> None:
         self.input.exit_gameplay()
         self._apply_display(initial=False)
+        try:
+            self.notifier.set_window(
+                int(pygame.display.get_wm_info().get("window", 0))
+            )
+        except pygame.error:
+            pass
         self.settings_store.save(self.settings)
         logging.info(
             "Display reconfigured: %sx%s refresh=%s",
@@ -221,6 +241,21 @@ class App:
     def save_settings(self) -> None:
         self.settings_store.save(self.settings)
         self.audio.apply_config(self.settings.audio)
+
+    def notify_system(self, title: str, message: str, force: bool = False) -> bool:
+        """Show a Win32 tray notification; default only when minimized/unfocused."""
+        notifier = getattr(self, "notifier", None)
+        if notifier is None or not notifier.available:
+            return False
+        if not force and not (
+            self.window_minimized or not pygame.display.get_active()
+        ):
+            return False
+        try:
+            hwnd = int(pygame.display.get_wm_info().get("window", 0))
+        except pygame.error:
+            return False
+        return notifier.notify(hwnd, title, message)
 
     def switch_scene(self, scene: "Scene") -> None:
         while self.scene_stack:
@@ -257,6 +292,13 @@ class App:
                         self.running = False
                     elif event.type == pygame.KEYDOWN and event.key == pygame.K_F3:
                         self.debug = not self.debug
+                    elif event.type == getattr(pygame, "WINDOWMINIMIZED", -1):
+                        self.window_minimized = True
+                    elif event.type in (
+                        getattr(pygame, "WINDOWRESTORED", -1),
+                        getattr(pygame, "WINDOWSHOWN", -1),
+                    ):
+                        self.window_minimized = False
 
                 if not self.eye_care.active:
                     self.current.handle_events(events)
@@ -339,6 +381,7 @@ class App:
             self.save_settings()
             self.storage.close()
         finally:
+            self.notifier.remove()
             pygame.quit()
 
 

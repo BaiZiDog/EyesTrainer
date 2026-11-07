@@ -18,8 +18,9 @@ if not exist ".venv\Scripts\python.exe" (
     --windows-console-mode=disable ^
     --output-dir=dist ^
     --output-filename=EyesTrainer.exe ^
-    --company-name=EyesTrainer ^
+    --company-name=BaiZiDog ^
     --product-name=EyesTrainer ^
+    --copyright="Copyright (C) 2026 BaiZiDog" ^
     --file-version=0.5.0.0 ^
     --product-version=0.5.0.0 ^
     --file-description="FPS visual and reaction trainer" ^

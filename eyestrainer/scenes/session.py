@@ -271,6 +271,10 @@ class SessionScene(Scene):
         self.session_finished = True
         self.phase = "finished"
         self.app.input.exit_gameplay()
+        self.app.notify_system(
+            "EyesTrainer · 训练完成",
+            "本次训练已结束，结果已保存。建议休息 1–2 分钟。",
+        )
         from .results import ResultsScene
 
         self.app.switch_scene(
