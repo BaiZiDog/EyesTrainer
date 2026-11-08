@@ -6,6 +6,7 @@ import pygame
 
 from ..core.font import FontBook
 from ..core.geometry import RectTuple
+from ..core.i18n import DEFAULT_LANGUAGE, translate
 
 Color = tuple[int, int, int]
 
@@ -26,6 +27,7 @@ class Theme:
     height: int
     fonts: FontBook
     ui: float = 1.0
+    lang: str = DEFAULT_LANGUAGE
     bg: Color = (11, 14, 20)
     panel: Color = (18, 23, 34)
     panel_alt: Color = (22, 28, 41)
@@ -44,6 +46,9 @@ class Theme:
 
     def font(self, size: float, bold: bool = False) -> pygame.font.Font:
         return self.fonts.get(int(round(size * self.ui)), bold)
+
+    def tr(self, text: str, **kwargs) -> str:
+        return translate(text, self.lang, **kwargs)
 
     def text(
         self,
@@ -102,6 +107,11 @@ class Theme:
         surface.blit(cached, (x, y))
 
 
-def make_theme(width: int, height: int, fonts: FontBook) -> Theme:
+def make_theme(
+    width: int,
+    height: int,
+    fonts: FontBook,
+    lang: str = DEFAULT_LANGUAGE,
+) -> Theme:
     ui = max(0.75, min(1.5, height / 1080.0))
-    return Theme(width=width, height=height, fonts=fonts, ui=ui)
+    return Theme(width=width, height=height, fonts=fonts, ui=ui, lang=lang)

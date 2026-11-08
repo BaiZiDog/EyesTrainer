@@ -36,6 +36,16 @@ def test_defaults_and_sanitize():
     assert s.eye_care.reminder_min == 25
     assert s.calibration.screen_diagonal_in == 80
     assert s.calibration.view_distance_cm == 20
+    assert s.language == "zh"
+
+
+def test_language_roundtrip_and_sanitize():
+    s = UserSettings.from_dict({"language": "en"})
+    assert s.language == "en"
+    s.language = "fr"
+    s.sanitize()
+    assert s.language == "zh"
+    assert UserSettings.from_dict({"language": "EN"}).language == "en"
 
 
 def test_settings_store_roundtrip(tmp_path):
@@ -50,10 +60,12 @@ def test_settings_store_roundtrip(tmp_path):
     s = store.load()
     s.input.sensitivity = 2.5
     s.training.rounds = 4
+    s.language = "en"
     store.save(s)
     loaded = store.load()
     assert loaded.input.sensitivity == 2.5
     assert loaded.training.rounds == 4
+    assert loaded.language == "en"
     data = json.loads(paths.settings_path.read_text(encoding="utf-8"))
     assert data["input"]["sensitivity"] == 2.5
 

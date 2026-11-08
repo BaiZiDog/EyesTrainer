@@ -100,11 +100,14 @@ class ResultsScene(Scene):
         height = int(46 * theme.ui)
         gap = int(12 * theme.ui)
         items = [
-            ("again", "再来一次"),
-            ("modules", "模块选择"),
-            ("history", "历史记录"),
-            ("chart_mode", "分布图" if self.show_trajectory else "轨迹分析"),
-            ("menu", "主菜单"),
+            ("again", self.app.tr("再来一次")),
+            ("modules", self.app.tr("模块选择")),
+            ("history", self.app.tr("历史记录")),
+            (
+                "chart_mode",
+                self.app.tr("分布图" if self.show_trajectory else "轨迹分析"),
+            ),
+            ("menu", self.app.tr("主菜单")),
         ]
         if self._trajectory is None:
             items = [item for item in items if item[0] != "chart_mode"]
@@ -146,7 +149,7 @@ class ResultsScene(Scene):
                 if self.buttons.get("chart_mode") and self.buttons["chart_mode"].hit(pos):
                     if self._trajectory is not None:
                         self.show_trajectory = not self.show_trajectory
-                        self.buttons["chart_mode"].label = (
+                        self.buttons["chart_mode"].label = self.app.tr(
                             "分布图" if self.show_trajectory else "轨迹分析"
                         )
                         self.app.audio.play("click")
@@ -178,7 +181,7 @@ class ResultsScene(Scene):
         surface.fill(theme.bg)
         theme.text(
             surface,
-            f"{_MODULE_LABELS.get(self.module_id, self.module_id)} · {_MODE_LABELS.get(self.mode, self.mode)}",
+            f"{theme.tr(_MODULE_LABELS.get(self.module_id, self.module_id))} · {theme.tr(_MODE_LABELS.get(self.mode, self.mode))}",
             (theme.width // 2, int(36 * theme.ui)),
             size=36,
             color=theme.text_color,
@@ -187,7 +190,11 @@ class ResultsScene(Scene):
         )
         theme.text(
             surface,
-            "训练完成" if self._main_rounds_done() else "训练已结束（未完成全部回合）",
+            theme.tr(
+                "训练完成"
+                if self._main_rounds_done()
+                else "训练已结束（未完成全部回合）"
+            ),
             (theme.width // 2, int(82 * theme.ui)),
             size=17,
             color=theme.accent if self._main_rounds_done() else theme.warning,
@@ -233,39 +240,153 @@ class ResultsScene(Scene):
 
     def _cards(self) -> list[tuple[str, str, str]]:
         s = self.summary
+        t = self.app.tr
         if self.module_id == "flick" and self.mode == "chain":
             return [
-                ("命中率", _fmt(s.get("accuracy"), "%", 1, 100.0), f"n={s.get('shots', 0)} 次射击"),
-                ("每分钟击杀", _fmt(s.get("kills_per_minute"), "", 1), f"{s.get('kill_count', 0)} 次击杀"),
-                ("击杀间隔", _fmt(s.get("iki_median"), " ms", 0), f"P25–P75 {_fmt(s.get('iki_p25'), '', 0)}–{_fmt(s.get('iki_p75'), '', 0)}"),
-                ("路径效率", _fmt(s.get("path_eff_median"), "%", 1, 100.0), "理想直线 / 实际移动"),
+                (
+                    t("命中率"),
+                    _fmt(s.get("accuracy"), "%", 1, 100.0),
+                    t("n={count} 次射击", count=s.get("shots", 0)),
+                ),
+                (
+                    t("每分钟击杀"),
+                    _fmt(s.get("kills_per_minute"), "", 1),
+                    t("{count} 次击杀", count=s.get("kill_count", 0)),
+                ),
+                (
+                    t("击杀间隔"),
+                    _fmt(s.get("iki_median"), " ms", 0),
+                    f"P25–P75 {_fmt(s.get('iki_p25'), '', 0)}–{_fmt(s.get('iki_p75'), '', 0)}",
+                ),
+                (
+                    t("路径效率"),
+                    _fmt(s.get("path_eff_median"), "%", 1, 100.0),
+                    t("理想直线 / 实际移动"),
+                ),
             ]
         if self.module_id == "flick":
             return [
-                ("命中反应时", _fmt(s.get("rt_median"), " ms", 0), f"P25–P75 {_fmt(s.get('rt_p25'), '', 0)}–{_fmt(s.get('rt_p75'), '', 0)}"),
-                ("首动反应时", _fmt(s.get("first_move_median"), " ms", 0), f"n={s.get('first_move_n', 0)}"),
-                ("命中率", _fmt(s.get("accuracy"), "%", 1, 100.0), f"命中 {s.get('hits', 0)} / 超时 {s.get('timeouts', 0)}"),
-                ("预判 / 空点", f"{s.get('anticipation', 0)} / {s.get('miss_clicks', 0)}", "预判点击计为失误"),
+                (
+                    t("命中反应时"),
+                    _fmt(s.get("rt_median"), " ms", 0),
+                    f"P25–P75 {_fmt(s.get('rt_p25'), '', 0)}–{_fmt(s.get('rt_p75'), '', 0)}",
+                ),
+                (
+                    t("首动反应时"),
+                    _fmt(s.get("first_move_median"), " ms", 0),
+                    f"n={s.get('first_move_n', 0)}",
+                ),
+                (
+                    t("命中率"),
+                    _fmt(s.get("accuracy"), "%", 1, 100.0),
+                    t(
+                        "命中 {hits} / 超时 {timeouts}",
+                        hits=s.get("hits", 0),
+                        timeouts=s.get("timeouts", 0),
+                    ),
+                ),
+                (
+                    t("预判 / 空点"),
+                    f"{s.get('anticipation', 0)} / {s.get('miss_clicks', 0)}",
+                    t("预判点击计为失误"),
+                ),
             ]
         if self.module_id == "dva":
             return [
-                ("可辨速度阈值", _fmt(s.get("threshold_deg_s"), " °/s", 1), f"{_fmt(s.get('threshold_px_s'), ' px/s', 0)}"),
-                ("正确率", _fmt(s.get("accuracy"), "%", 1, 100.0), f"{s.get('correct', 0)}/{s.get('trials', 0)} · 超时 {s.get('timeouts', 0)}"),
-                ("反应时中位", _fmt(s.get("rt_median"), " ms", 0), f"n={s.get('rt_n', 0)}"),
-                ("阶梯反转", f"{s.get('reversals', 0)}", f"最终 {_fmt(s.get('final_speed_deg_s'), ' °/s', 1)}"),
+                (
+                    t("可辨速度阈值"),
+                    _fmt(s.get("threshold_deg_s"), " °/s", 1),
+                    _fmt(s.get("threshold_px_s"), " px/s", 0),
+                ),
+                (
+                    t("正确率"),
+                    _fmt(s.get("accuracy"), "%", 1, 100.0),
+                    t(
+                        "{correct}/{trials} · 超时 {timeouts}",
+                        correct=s.get("correct", 0),
+                        trials=s.get("trials", 0),
+                        timeouts=s.get("timeouts", 0),
+                    ),
+                ),
+                (
+                    t("反应时中位"),
+                    _fmt(s.get("rt_median"), " ms", 0),
+                    f"n={s.get('rt_n', 0)}",
+                ),
+                (
+                    t("阶梯反转"),
+                    f"{s.get('reversals', 0)}",
+                    t(
+                        "最终 {value}",
+                        value=_fmt(s.get("final_speed_deg_s"), " °/s", 1),
+                    ),
+                ),
             ]
         if self.module_id == "peripheral":
             return [
-                ("周边检出率", _fmt(s.get("hit_rate_pct"), "%", 1), f"命中 {s.get('hits', 0)}/{s.get('target_trials', 0)}"),
-                ("误报率", _fmt(s.get("false_alarm_rate_pct"), "%", 1), f"误报 {s.get('false_alarms', 0)}/{s.get('catch_trials', 0)}"),
-                ("周边反应时", _fmt(s.get("rt_median"), " ms", 0), f"n={s.get('rt_n', 0)}"),
-                ("偏心角", _fmt(s.get("eccentricity_median_deg"), "°", 1), f"最大 {_fmt(s.get('eccentricity_max_deg'), '°', 1)}"),
+                (
+                    t("周边检出率"),
+                    _fmt(s.get("hit_rate_pct"), "%", 1),
+                    t(
+                        "命中 {hits}/{targets}",
+                        hits=s.get("hits", 0),
+                        targets=s.get("target_trials", 0),
+                    ),
+                ),
+                (
+                    t("误报率"),
+                    _fmt(s.get("false_alarm_rate_pct"), "%", 1),
+                    t(
+                        "误报 {errors}/{trials}",
+                        errors=s.get("false_alarms", 0),
+                        trials=s.get("catch_trials", 0),
+                    ),
+                ),
+                (
+                    t("周边反应时"),
+                    _fmt(s.get("rt_median"), " ms", 0),
+                    f"n={s.get('rt_n', 0)}",
+                ),
+                (
+                    t("偏心角"),
+                    _fmt(s.get("eccentricity_median_deg"), "°", 1),
+                    t(
+                        "最大 {value}",
+                        value=_fmt(s.get("eccentricity_max_deg"), "°", 1),
+                    ),
+                ),
             ]
         return [
-            ("覆盖率 TO/T", _fmt(s.get("tot_pct"), "%", 1), f"开火 {float(s.get('fired_ms') or 0) / 1000:.1f}s"),
-            ("平均偏离", _fmt(s.get("mean_err_px"), " px", 1), f"归一化 {_fmt(s.get('mean_err_norm'), '', 2)} r"),
-            ("触发覆盖率", _fmt(s.get("trigger_coverage"), "%", 1, 100.0), "低于 70% 参考性下降"),
-            ("目标速度", _fmt(s.get("speed_median"), " px/s", 0), f"范围 {_fmt(s.get('speed_min'), '', 0)}–{_fmt(s.get('speed_max'), '', 0)}"),
+            (
+                t("覆盖率 TO/T"),
+                _fmt(s.get("tot_pct"), "%", 1),
+                t(
+                    "开火 {seconds}s",
+                    seconds=f"{float(s.get('fired_ms') or 0) / 1000:.1f}",
+                ),
+            ),
+            (
+                t("平均偏离"),
+                _fmt(s.get("mean_err_px"), " px", 1),
+                t(
+                    "归一化 {value} r",
+                    value=_fmt(s.get("mean_err_norm"), "", 2),
+                ),
+            ),
+            (
+                t("触发覆盖率"),
+                _fmt(s.get("trigger_coverage"), "%", 1, 100.0),
+                t("低于 70% 参考性下降"),
+            ),
+            (
+                t("目标速度"),
+                _fmt(s.get("speed_median"), " px/s", 0),
+                t(
+                    "范围 {minimum}–{maximum}",
+                    minimum=_fmt(s.get("speed_min"), "", 0),
+                    maximum=_fmt(s.get("speed_max"), "", 0),
+                ),
+            ),
         ]
 
     def _prepare_trajectory(self) -> dict | None:
@@ -323,7 +444,10 @@ class ResultsScene(Scene):
                 ),
                 "click": (trial["cross_x"], trial["cross_y"]),
                 "arena": result.arena,
-                "label": f"轨迹示例 · 目标 #{trial.get('target_id', '-')}",
+                "label": self.app.tr(
+                    "轨迹示例 · 目标 #{target}",
+                    target=trial.get("target_id", "-"),
+                ),
             }
         for result in reversed(self.rounds):
             if result.is_warmup or not result.motion_blob or not result.arena:
@@ -342,7 +466,7 @@ class ResultsScene(Scene):
                 "kind": "track",
                 "samples": downsample(window, 700),
                 "arena": result.arena,
-                "label": "追踪轨迹 · 最近 6 秒",
+                "label": self.app.tr("追踪轨迹 · 最近 6 秒"),
             }
         return None
 
@@ -356,7 +480,7 @@ class ResultsScene(Scene):
                 self.app.theme,
                 rect,
                 metrics.valid_reaction_rts(self.main_trials),
-                title="命中反应时分布",
+                title=self.app.tr("命中反应时分布"),
                 unit=" ms",
             )
         elif self.module_id == "flick":
@@ -365,7 +489,7 @@ class ResultsScene(Scene):
                 self.app.theme,
                 rect,
                 metrics.inter_kill_intervals(self.main_trials),
-                title="击杀间隔分布",
+                title=self.app.tr("击杀间隔分布"),
                 unit=" ms",
             )
         elif self.module_id == "dva":
@@ -379,11 +503,11 @@ class ResultsScene(Scene):
                 self.app.theme,
                 rect,
                 values,
-                title="速度阶梯（deg/s）",
+                title=self.app.tr("速度阶梯（deg/s）"),
                 unit=" °/s",
                 x_labels=[str(t.get("trial_idx", i + 1)) for i, t in enumerate(self.main_trials)],
                 reference=self.summary.get("threshold_deg_s"),
-                reference_label="阈值",
+                reference_label=self.app.tr("阈值"),
             )
         elif self.module_id == "peripheral":
             values = [
@@ -396,11 +520,11 @@ class ResultsScene(Scene):
                 self.app.theme,
                 rect,
                 values,
-                title="偏心角阶梯（度）",
+                title=self.app.tr("偏心角阶梯（度）"),
                 unit="°",
                 x_labels=[str(t.get("trial_idx", i + 1)) for i, t in enumerate(self.main_trials)],
                 reference=self.summary.get("eccentricity_median_deg"),
-                reference_label="中位",
+                reference_label=self.app.tr("中位"),
             )
         else:
             values: list[float] = []
@@ -418,7 +542,7 @@ class ResultsScene(Scene):
                 self.app.theme,
                 rect,
                 values,
-                title="各回合覆盖率",
+                title=self.app.tr("各回合覆盖率"),
                 unit="%",
                 x_labels=labels,
             )
@@ -507,7 +631,7 @@ class ResultsScene(Scene):
                 max(2, int(last.target_r * scale)),
                 width=max(1, int(2 * theme.ui)),
             )
-        legend = (
+        legend = theme.tr(
             "白=起点  绿=准星轨迹  红=目标  黄=点击"
             if data["kind"] == "flick"
             else "红=目标轨迹  绿=准星轨迹"
@@ -522,16 +646,17 @@ class ResultsScene(Scene):
 
     def _draw_side_panel(self, surface: pygame.Surface, rect: pygame.Rect) -> None:
         theme = self.app.theme
+        t = theme.tr
         theme.panel_rect(surface, rect)
         x = rect.left + int(18 * theme.ui)
         y = rect.top + int(14 * theme.ui)
-        theme.text(surface, "本次 vs 历史", (x, y), size=17, color=theme.text_color, bold=True)
+        theme.text(surface, t("本次 vs 历史"), (x, y), size=17, color=theme.text_color, bold=True)
         y += int(34 * theme.ui)
         primary = metrics.primary_metric(
             self.module_id, self.mode, self.summary
         )
         key = primary["key"]
-        label = primary["label"]
+        label = t(primary["label"])
         unit = primary["unit"]
         current = self.summary.get(key)
         theme.text(surface, label, (x, y), size=14, color=theme.muted)
@@ -549,7 +674,7 @@ class ResultsScene(Scene):
         best_value = self.best.get(key) if self.best else None
         theme.text(
             surface,
-            f"上次：{_fmt(prev_value, unit, 1)}",
+            t("上次：{value}", value=_fmt(prev_value, unit, 1)),
             (x, y),
             size=15,
             color=theme.muted,
@@ -557,7 +682,7 @@ class ResultsScene(Scene):
         y += int(24 * theme.ui)
         theme.text(
             surface,
-            f"最佳：{_fmt(best_value, unit, 1)}",
+            t("最佳：{value}", value=_fmt(best_value, unit, 1)),
             (x, y),
             size=15,
             color=theme.muted,
@@ -567,7 +692,11 @@ class ResultsScene(Scene):
         level_max = self.summary.get("level_max")
         theme.text(
             surface,
-            f"等级范围：{_fmt(level_min, '', 0)} – {_fmt(level_max, '', 0)}",
+            t(
+                "等级范围：{minimum} – {maximum}",
+                minimum=_fmt(level_min, "", 0),
+                maximum=_fmt(level_max, "", 0),
+            ),
             (x, y),
             size=14,
             color=theme.muted,
@@ -579,22 +708,50 @@ class ResultsScene(Scene):
         pauses = sum(int(r.summary.get("pauses", 0)) for r in self.rounds)
         theme.text(
             surface,
-            f"长帧：{long_frames}　暂停：{pauses}　热身：{self.warmup_rounds} 回合",
+            t(
+                "长帧：{long_frames}　暂停：{pauses}　热身：{warmup} 回合",
+                long_frames=long_frames,
+                pauses=pauses,
+                warmup=self.warmup_rounds,
+            ),
             (x, y),
             size=14,
             color=theme.warning if long_frames > 20 else theme.muted,
         )
         y += int(26 * theme.ui)
         if self.module_id == "flick" and self.mode == "reaction":
-            extra = f"超时 {self.summary.get('timeouts', 0)} · 预判 {self.summary.get('anticipation', 0)}"
+            extra = t(
+                "超时 {timeouts} · 预判 {anticipation}",
+                timeouts=self.summary.get("timeouts", 0),
+                anticipation=self.summary.get("anticipation", 0),
+            )
         elif self.module_id == "track":
-            extra = f"窗口 {self.summary.get('windows', 0)} · 开火占比 {_fmt(self.summary.get('trigger_coverage'), '%', 0, 100.0)}"
+            extra = t(
+                "窗口 {windows} · 开火占比 {coverage}",
+                windows=self.summary.get("windows", 0),
+                coverage=_fmt(
+                    self.summary.get("trigger_coverage"), "%", 0, 100.0
+                ),
+            )
         elif self.module_id == "dva":
-            extra = f"响应 {self.summary.get('responses', 0)}/{self.summary.get('trials', 0)} · 超时 {self.summary.get('timeouts', 0)}"
+            extra = t(
+                "响应 {responses}/{trials} · 超时 {timeouts}",
+                responses=self.summary.get("responses", 0),
+                trials=self.summary.get("trials", 0),
+                timeouts=self.summary.get("timeouts", 0),
+            )
         elif self.module_id == "peripheral":
-            extra = f"试次 {self.summary.get('trials', 0)} · 目标 {self.summary.get('target_trials', 0)} · 抑制 {self.summary.get('catch_trials', 0)}"
+            extra = t(
+                "试次 {trials} · 目标 {targets} · 抑制 {catches}",
+                trials=self.summary.get("trials", 0),
+                targets=self.summary.get("target_trials", 0),
+                catches=self.summary.get("catch_trials", 0),
+            )
         else:
-            extra = f"点击误差中位 {_fmt(self.summary.get('click_err_median'), ' r', 2)}"
+            extra = t(
+                "点击误差中位 {value}",
+                value=_fmt(self.summary.get("click_err_median"), " r", 2),
+            )
         theme.text(
             surface,
             extra,
@@ -613,39 +770,115 @@ class ResultsScene(Scene):
         y += int(10 * theme.ui)
         if self.module_id == "flick":
             advanced = [
-                f"首次入靶 {_fmt(self.summary.get('entry_median'), ' ms', 0)} · "
-                f"入靶→点击 {_fmt(self.summary.get('correction_median'), ' ms', 0)}",
-                f"过冲 {_fmt(self.summary.get('overshoot_median'), ' px', 1)} · "
-                f"方向变化 {_fmt(self.summary.get('direction_changes_median'), '', 1)}",
-                f"峰值速度 {_fmt(self.summary.get('peak_speed_median'), ' px/s', 0)}",
-                f"轨迹曲率 {_fmt(self.summary.get('curvature_median'), '', 2)}",
+                t(
+                    "首次入靶 {entry} · 入靶→点击 {correction}",
+                    entry=_fmt(self.summary.get("entry_median"), " ms", 0),
+                    correction=_fmt(
+                        self.summary.get("correction_median"), " ms", 0
+                    ),
+                ),
+                t(
+                    "过冲 {overshoot} · 方向变化 {changes}",
+                    overshoot=_fmt(
+                        self.summary.get("overshoot_median"), " px", 1
+                    ),
+                    changes=_fmt(
+                        self.summary.get("direction_changes_median"), "", 1
+                    ),
+                ),
+                t(
+                    "峰值速度 {value}",
+                    value=_fmt(
+                        self.summary.get("peak_speed_median"), " px/s", 0
+                    ),
+                ),
+                t(
+                    "轨迹曲率 {value}",
+                    value=_fmt(self.summary.get("curvature_median"), "", 2),
+                ),
             ]
         elif self.module_id == "track":
             advanced = [
-                f"跟踪滞后 {_fmt(self.summary.get('lag_median'), ' ms', 0)} · "
-                f"方向修正 {_fmt(self.summary.get('dir_changes_median'), '/s', 1)}",
-                f"速度波动 {_fmt(self.summary.get('jitter_median'), ' px/s', 0)}",
-                f"峰值速度 {_fmt(self.summary.get('peak_speed_max'), ' px/s', 0)}",
-                f"误差波动 {_fmt(self.summary.get('error_std_median'), ' px', 1)}",
+                t(
+                    "跟踪滞后 {lag} · 方向修正 {changes}",
+                    lag=_fmt(self.summary.get("lag_median"), " ms", 0),
+                    changes=_fmt(
+                        self.summary.get("dir_changes_median"), "/s", 1
+                    ),
+                ),
+                t(
+                    "速度波动 {value}",
+                    value=_fmt(self.summary.get("jitter_median"), " px/s", 0),
+                ),
+                t(
+                    "峰值速度 {value}",
+                    value=_fmt(self.summary.get("peak_speed_max"), " px/s", 0),
+                ),
+                t(
+                    "误差波动 {value}",
+                    value=_fmt(self.summary.get("error_std_median"), " px", 1),
+                ),
             ]
         elif self.module_id == "dva":
             advanced = [
-                f"阈值 {_fmt(self.summary.get('threshold_deg_s'), ' °/s', 1)} · "
-                f"{_fmt(self.summary.get('threshold_px_s'), ' px/s', 0)}",
-                f"反转 {self.summary.get('reversals', 0)} · "
-                f"响应率 {_fmt(self.summary.get('response_rate'), '%', 1, 100.0)}",
-                f"平均速度 {_fmt(self.summary.get('speed_median_deg_s'), ' °/s', 1)}",
-                f"最终速度 {_fmt(self.summary.get('final_speed_deg_s'), ' °/s', 1)} · "
-                f"等级 {_fmt(self.summary.get('level_final'), '', 0)}",
+                t(
+                    "阈值 {threshold} · {pixels}",
+                    threshold=_fmt(
+                        self.summary.get("threshold_deg_s"), " °/s", 1
+                    ),
+                    pixels=_fmt(
+                        self.summary.get("threshold_px_s"), " px/s", 0
+                    ),
+                ),
+                t(
+                    "反转 {reversals} · 响应率 {rate}",
+                    reversals=self.summary.get("reversals", 0),
+                    rate=_fmt(
+                        self.summary.get("response_rate"), "%", 1, 100.0
+                    ),
+                ),
+                t(
+                    "平均速度 {value}",
+                    value=_fmt(
+                        self.summary.get("speed_median_deg_s"), " °/s", 1
+                    ),
+                ),
+                t(
+                    "最终速度 {speed} · 等级 {level}",
+                    speed=_fmt(
+                        self.summary.get("final_speed_deg_s"), " °/s", 1
+                    ),
+                    level=_fmt(self.summary.get("level_final"), "", 0),
+                ),
             ]
         else:
             advanced = [
-                f"漏检 {self.summary.get('misses', 0)} · 误报 {self.summary.get('false_alarms', 0)}",
-                f"正确抑制 {self.summary.get('correct_rejections', 0)}/{self.summary.get('catch_trials', 0)}",
-                f"曝光 {_fmt(self.summary.get('exposure_ms_median'), ' ms', 0)} · "
-                f"刺激 {_fmt(self.summary.get('stimulus_count_median'), '', 0)}",
-                f"偏心角 {_fmt(self.summary.get('eccentricity_median_deg'), '°', 1)} · "
-                f"等级 {_fmt(self.summary.get('level_final'), '', 0)}",
+                t(
+                    "漏检 {misses} · 误报 {false_alarms}",
+                    misses=self.summary.get("misses", 0),
+                    false_alarms=self.summary.get("false_alarms", 0),
+                ),
+                t(
+                    "正确抑制 {correct}/{trials}",
+                    correct=self.summary.get("correct_rejections", 0),
+                    trials=self.summary.get("catch_trials", 0),
+                ),
+                t(
+                    "曝光 {exposure} · 刺激 {stimuli}",
+                    exposure=_fmt(
+                        self.summary.get("exposure_ms_median"), " ms", 0
+                    ),
+                    stimuli=_fmt(
+                        self.summary.get("stimulus_count_median"), "", 0
+                    ),
+                ),
+                t(
+                    "偏心角 {eccentricity} · 等级 {level}",
+                    eccentricity=_fmt(
+                        self.summary.get("eccentricity_median_deg"), "°", 1
+                    ),
+                    level=_fmt(self.summary.get("level_final"), "", 0),
+                ),
             ]
         for line in advanced:
             theme.text(

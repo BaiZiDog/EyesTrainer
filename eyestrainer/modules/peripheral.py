@@ -325,7 +325,7 @@ class PeripheralModule:
         if self.state == "feedback" and self.feedback_text:
             theme.text(
                 surf,
-                self.feedback_text,
+                theme.tr(self.feedback_text),
                 (cx, cy + height * 0.20),
                 size=20,
                 color=self.feedback_color,
@@ -334,7 +334,7 @@ class PeripheralModule:
             )
         theme.text(
             surf,
-            "注视中央十字 · 空格：报告实心目标",
+            theme.tr("注视中央十字 · 空格：报告实心目标"),
             (cx, top + height - 22 * theme.ui),
             size=14,
             color=theme.muted,

@@ -7,6 +7,8 @@ from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 from typing import Any
 
+from .core.i18n import DEFAULT_LANGUAGE, normalize_language
+
 APP_NAME = "EyesTrainer"
 APP_VERSION = "0.5.0"
 
@@ -69,6 +71,7 @@ class CalibrationConfig:
 class UserSettings:
     version: int = 1
     profile: str = "default"
+    language: str = DEFAULT_LANGUAGE
     display: DisplayConfig = field(default_factory=DisplayConfig)
     input: InputConfig = field(default_factory=InputConfig)
     audio: AudioConfig = field(default_factory=AudioConfig)
@@ -85,6 +88,7 @@ class UserSettings:
         if not isinstance(data, dict):
             return settings
         settings.profile = _as_str(data.get("profile"), settings.profile)
+        settings.language = normalize_language(data.get("language"))
         settings.display = _load_section(DisplayConfig, data.get("display"))
         settings.input = _load_input(data.get("input"))
         settings.audio = _load_section(AudioConfig, data.get("audio"))
@@ -95,6 +99,8 @@ class UserSettings:
         return settings
 
     def sanitize(self) -> None:
+        self.language = normalize_language(self.language)
+
         d = self.display
         d.fullscreen = bool(d.fullscreen)
         d.vsync = bool(d.vsync)

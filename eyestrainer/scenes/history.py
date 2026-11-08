@@ -201,16 +201,16 @@ class HistoryScene(Scene):
                     module_w,
                     int(44 * theme.ui),
                 ),
-                label,
+                self.app.tr(label),
                 selected=self.module_id == module_id,
             )
         self.buttons["back"] = Button(
             pygame.Rect(int(30 * theme.ui), int(30 * theme.ui), int(120 * theme.ui), int(42 * theme.ui)),
-            "返回",
+            self.app.tr("返回"),
         )
         self.buttons["export"] = Button(
             pygame.Rect(theme.width - int(210 * theme.ui), int(30 * theme.ui), int(180 * theme.ui), int(42 * theme.ui)),
-            "导出 CSV",
+            self.app.tr("导出 CSV"),
         )
         modes = _MODULE_MODES[self.module_id]
         mode_w = int(150 * theme.ui)
@@ -226,7 +226,7 @@ class HistoryScene(Scene):
                     mode_w,
                     int(44 * theme.ui),
                 ),
-                _MODE_LABELS[mode],
+                self.app.tr(_MODE_LABELS[mode]),
                 selected=self.mode == mode,
             )
         options = _METRICS.get((self.module_id, self.mode), [])
@@ -239,7 +239,7 @@ class HistoryScene(Scene):
                     metric_w,
                     int(36 * theme.ui),
                 ),
-                label,
+                self.app.tr(label),
                 selected=self.metric_index == i,
             )
 
@@ -288,7 +288,9 @@ class HistoryScene(Scene):
                     paths = self.app.storage.export_csv(
                         self.app.paths.export_dir, self.module_id, self.mode
                     )
-                    self.status = f"已导出到 {paths[0].parent}"
+                    self.status = self.app.tr(
+                        "已导出到 {path}", path=paths[0].parent
+                    )
                     self.app.audio.play("click")
                     return
                 if self.buttons["back"].hit(pos):
@@ -305,7 +307,7 @@ class HistoryScene(Scene):
         surface.fill(theme.bg)
         theme.text(
             surface,
-            "历史记录",
+            self.app.tr("历史记录"),
             (theme.width // 2, int(38 * theme.ui)),
             size=36,
             color=theme.text_color,
@@ -320,7 +322,7 @@ class HistoryScene(Scene):
         if not self.history or not options:
             theme.text(
                 surface,
-                "当前筛选暂无训练记录",
+                self.app.tr("当前筛选暂无训练记录"),
                 (theme.width // 2, theme.height // 2 - int(22 * theme.ui)),
                 size=22,
                 color=theme.muted,
@@ -330,8 +332,17 @@ class HistoryScene(Scene):
                 latest = self.latest[0]
                 theme.text(
                     surface,
-                    f"最近一次训练：{_MODULE_LABELS.get(latest['module'], latest['module'])} · "
-                    f"{_MODE_LABELS.get(latest['mode'], latest['mode'])}",
+                    self.app.tr(
+                        "最近一次训练：{module} · {mode}",
+                        module=self.app.tr(
+                            _MODULE_LABELS.get(
+                                latest["module"], latest["module"]
+                            )
+                        ),
+                        mode=self.app.tr(
+                            _MODE_LABELS.get(latest["mode"], latest["mode"])
+                        ),
+                    ),
                     (theme.width // 2, theme.height // 2 + int(18 * theme.ui)),
                     size=15,
                     color=theme.warning,
@@ -362,16 +373,22 @@ class HistoryScene(Scene):
             theme,
             chart_rect,
             values,
-            title=f"{label} 趋势（最近 {len(values)} 次）",
+            title=self.app.tr(
+                "{label} 趋势（最近 {count} 次）",
+                label=self.app.tr(label),
+                count=len(values),
+            ),
             unit=unit,
             x_labels=labels,
             reference=best,
-            reference_label="最佳",
+            reference_label=self.app.tr("最佳"),
         )
         if not values:
             theme.text(
                 surface,
-                "旧记录未采集该指标，完成一次新训练后即可看到趋势",
+                self.app.tr(
+                    "旧记录未采集该指标，完成一次新训练后即可看到趋势"
+                ),
                 (chart_rect.centerx, chart_rect.centery + int(22 * theme.ui)),
                 size=15,
                 color=theme.warning,
@@ -381,7 +398,7 @@ class HistoryScene(Scene):
         list_y = chart_rect.bottom + int(26 * theme.ui)
         theme.text(
             surface,
-            "最近记录",
+            self.app.tr("最近记录"),
             (int(60 * theme.ui), list_y),
             size=17,
             color=theme.text_color,
@@ -393,17 +410,30 @@ class HistoryScene(Scene):
             value_text = (
                 _fmt(float(value) * scale, unit, 1) if value is not None else "—"
             )
-            status = {
-                "completed": "完成",
-                "incomplete": "未完成",
-                "running": "进行中",
-            }.get(summary.get("status", ""), summary.get("status", ""))
-            mismatch = "  设置不同" if _config_mismatch(summary, self.app) else ""
-            line = (
-                f"{_local_date(summary.get('started_at', ''))}   "
-                f"{_MODE_LABELS.get(summary.get('mode', ''), summary.get('mode', ''))}   "
-                f"{label} {value_text}   "
-                f"状态 {status}{mismatch}"
+            status = self.app.tr(
+                {
+                    "completed": "完成",
+                    "incomplete": "未完成",
+                    "running": "进行中",
+                }.get(summary.get("status", ""), summary.get("status", ""))
+            )
+            mismatch = (
+                "  " + self.app.tr("设置不同")
+                if _config_mismatch(summary, self.app)
+                else ""
+            )
+            line = self.app.tr(
+                "{date}   {mode}   {label} {value}   状态 {status}{mismatch}",
+                date=_local_date(summary.get("started_at", "")),
+                mode=self.app.tr(
+                    _MODE_LABELS.get(
+                        summary.get("mode", ""), summary.get("mode", "")
+                    )
+                ),
+                label=self.app.tr(label),
+                value=value_text,
+                status=status,
+                mismatch=mismatch,
             )
             theme.text(
                 surface,

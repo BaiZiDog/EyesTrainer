@@ -53,7 +53,7 @@ def draw_hud(
     if show_level and level is not None:
         theme.text(
             surface,
-            f"等级 {level:.0f}",
+            theme.tr("等级 {level}", level=f"{level:.0f}"),
             (theme.width - 28 * theme.ui, 20 * theme.ui),
             size=18,
             color=theme.muted,

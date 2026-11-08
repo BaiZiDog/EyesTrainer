@@ -66,7 +66,9 @@ class SessionScene(Scene):
         self._round_started_at = utc_now()
         self.arena = geometry.arena_rect((app.theme.width, app.theme.height))
         self.buttons: dict[str, Button] = {}
-        self.rest_skip = Button(pygame.Rect(0, 0, 1, 1), "跳过休息")
+        self.rest_skip = Button(
+            pygame.Rect(0, 0, 1, 1), app.tr("跳过休息")
+        )
         self._display_gen = app.display_generation
         self._frame_events: tuple[pygame.event.Event, ...] = ()
         self._layout_overlays()
@@ -272,8 +274,8 @@ class SessionScene(Scene):
         self.phase = "finished"
         self.app.input.exit_gameplay()
         self.app.notify_system(
-            "EyesTrainer · 训练完成",
-            "本次训练已结束，结果已保存。建议休息 1–2 分钟。",
+            self.app.tr("EyesTrainer · 训练完成"),
+            self.app.tr("本次训练已结束，结果已保存。建议休息 1–2 分钟。"),
         )
         from .results import ResultsScene
 
@@ -500,11 +502,11 @@ class SessionScene(Scene):
         gap = int(12 * theme.ui)
         y = int(theme.height * 0.52)
         items = [
-            ("resume", "继续", "primary"),
-            ("restart", "重新开始本回合", "secondary"),
-            ("end", "结束本次训练", "secondary"),
-            ("settings", "设置", "secondary"),
-            ("menu", "返回主菜单", "secondary"),
+            ("resume", self.app.tr("继续"), "primary"),
+            ("restart", self.app.tr("重新开始本回合"), "secondary"),
+            ("end", self.app.tr("结束本次训练"), "secondary"),
+            ("settings", self.app.tr("设置"), "secondary"),
+            ("menu", self.app.tr("返回主菜单"), "secondary"),
         ]
         self.buttons = {}
         for key, label, kind in items:
@@ -514,14 +516,14 @@ class SessionScene(Scene):
             y += height + gap
         self.rest_skip = Button(
             pygame.Rect(cx - int(160 * theme.ui), int(theme.height * 0.68), int(320 * theme.ui), int(52 * theme.ui)),
-            "跳过休息（Enter）",
+            self.app.tr("跳过休息（Enter）"),
         )
 
     def _draw_rest(self, surface: pygame.Surface) -> None:
         theme = self.app.theme
         theme.text(
             surface,
-            "休息",
+            self.app.tr("休息"),
             (theme.width // 2, int(theme.height * 0.34)),
             size=52,
             color=theme.accent,
@@ -530,7 +532,10 @@ class SessionScene(Scene):
         )
         theme.text(
             surface,
-            f"下一回合 {max(0, math.ceil(self.phase_timer))} 秒后开始",
+            self.app.tr(
+                "下一回合 {seconds} 秒后开始",
+                seconds=max(0, math.ceil(self.phase_timer)),
+            ),
             (theme.width // 2, int(theme.height * 0.43)),
             size=22,
             color=theme.text_color,
@@ -538,7 +543,7 @@ class SessionScene(Scene):
         )
         theme.text(
             surface,
-            "放松手腕，眨眨眼，看向远处",
+            self.app.tr("放松手腕，眨眨眼，看向远处"),
             (theme.width // 2, int(theme.height * 0.48)),
             size=17,
             color=theme.muted,
@@ -552,7 +557,12 @@ class SessionScene(Scene):
         if next_plan is not None:
             theme.text(
                 surface,
-                "下一回合：" + ("热身" if next_plan.is_warmup else f"第 {next_plan.round_idx} 回合"),
+                self.app.tr(
+                    "下一回合：热身"
+                    if next_plan.is_warmup
+                    else "下一回合：第 {round} 回合",
+                    round=next_plan.round_idx,
+                ),
                 (theme.width // 2, int(theme.height * 0.54)),
                 size=16,
                 color=theme.muted,
@@ -564,7 +574,7 @@ class SessionScene(Scene):
         theme = self.app.theme
         theme.text(
             surface,
-            "已暂停",
+            self.app.tr("已暂停"),
             (theme.width // 2, int(theme.height * 0.34)),
             size=44,
             color=theme.text_color,
@@ -574,7 +584,13 @@ class SessionScene(Scene):
         plan = self.plan[self.plan_index]
         theme.text(
             surface,
-            f"{'热身' if plan.is_warmup else f'第 {plan.round_idx} 回合'} · 剩余 {max(0, plan.duration_s - self.round_t):.0f}s",
+            self.app.tr(
+                "热身 · 剩余 {seconds}s"
+                if plan.is_warmup
+                else "第 {round} 回合 · 剩余 {seconds}s",
+                round=plan.round_idx,
+                seconds=f"{max(0, plan.duration_s - self.round_t):.0f}",
+            ),
             (theme.width // 2, int(theme.height * 0.40)),
             size=17,
             color=theme.muted,
@@ -585,7 +601,7 @@ class SessionScene(Scene):
             button.draw(surface, theme, mouse_pos)
         theme.text(
             surface,
-            "Esc 继续 · R 重开本回合 · M 返回主菜单",
+            self.app.tr("Esc 继续 · R 重开本回合 · M 返回主菜单"),
             (theme.width // 2, theme.height - int(28 * theme.ui)),
             size=13,
             color=theme.muted,

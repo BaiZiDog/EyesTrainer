@@ -17,6 +17,7 @@ import pygame
 from .config import AppPaths, SettingsStore, UserSettings
 from .core.audio import Audio
 from .core.font import FontBook
+from .core.i18n import normalize_language
 from .core.input import AimInput
 from .core.notify import WindowsNotifier
 from .core.storage import Storage
@@ -90,8 +91,8 @@ class EyeCareTracker:
             self.accumulated = 0.0
             self.overlay_remaining = 20.0
             self.app.notify_system(
-                "EyesTrainer · 休息提醒",
-                "已训练较长时间，请看向 6 米外至少 20 秒。",
+                self.app.tr("EyesTrainer · 休息提醒"),
+                self.app.tr("已训练较长时间，请看向 6 米外至少 20 秒。"),
                 force=True,
             )
             hook = getattr(self.app.current, "on_eye_rest_start", None)
@@ -136,7 +137,12 @@ class App:
             pass
 
         self.fonts = FontBook()
-        self.theme = make_theme(self.screen.get_width(), self.screen.get_height(), self.fonts)
+        self.theme = make_theme(
+            self.screen.get_width(),
+            self.screen.get_height(),
+            self.fonts,
+            lang=self.settings.language,
+        )
         self.storage = Storage(self.paths.db_path)
         orphans = self.storage.mark_orphans_incomplete()
         if orphans:
@@ -210,7 +216,10 @@ class App:
         self.frame_budget = 1.0 / max(1, self.refresh_rate)
         if not initial:
             self.theme = make_theme(
-                self.screen.get_width(), self.screen.get_height(), self.fonts
+                self.screen.get_width(),
+                self.screen.get_height(),
+                self.fonts,
+                lang=self.settings.language,
             )
             self.frame_stats.set_budget(self.frame_budget)
             self.pacer.set_fps(self._effective_fps_cap())
@@ -241,6 +250,21 @@ class App:
     def save_settings(self) -> None:
         self.settings_store.save(self.settings)
         self.audio.apply_config(self.settings.audio)
+
+    def tr(self, text: str, **kwargs) -> str:
+        return self.theme.tr(text, **kwargs)
+
+    def set_language(self, language: str) -> None:
+        language = normalize_language(language)
+        if language == self.settings.language:
+            return
+        self.settings.language = language
+        self.theme.lang = language
+        self.settings_store.save(self.settings)
+        handler = getattr(self.current, "on_language_changed", None)
+        if callable(handler):
+            handler()
+        logging.info("Language changed to %s", language)
 
     def notify_system(self, title: str, message: str, force: bool = False) -> bool:
         """Show a Win32 tray notification; default only when minimized/unfocused."""
@@ -339,7 +363,7 @@ class App:
         theme.panel_rect(self.screen, rect, radius=int(16 * theme.ui))
         theme.text(
             self.screen,
-            "休息一下",
+            theme.tr("休息一下"),
             (rect.centerx, rect.top + int(46 * theme.ui)),
             size=38,
             color=theme.accent,
@@ -348,7 +372,7 @@ class App:
         )
         theme.text(
             self.screen,
-            "看远处 20 英尺（约 6 米）外至少 20 秒",
+            theme.tr("看远处 20 英尺（约 6 米）外至少 20 秒"),
             (rect.centerx, rect.top + int(104 * theme.ui)),
             size=20,
             color=theme.text_color,
@@ -356,7 +380,7 @@ class App:
         )
         theme.text(
             self.screen,
-            "顺便眨眼、放松肩颈",
+            theme.tr("顺便眨眼、放松肩颈"),
             (rect.centerx, rect.top + int(142 * theme.ui)),
             size=18,
             color=theme.muted,

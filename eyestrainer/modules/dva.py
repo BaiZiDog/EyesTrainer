@@ -57,6 +57,7 @@ class DvaModule:
         self.level = 0.0
         self.staircase: DvaStaircase | None = None
         self.feedback_text = ""
+        self.feedback_direction = ""
         self.feedback_color = (255, 255, 255)
         self.feedback_events: list[str] = []
 
@@ -76,6 +77,7 @@ class DvaModule:
         self.now_t = 0.0
         self.trial = None
         self.feedback_text = ""
+        self.feedback_direction = ""
         self.feedback_events = []
         self.px_per_deg = max(1.0, float(cfg.get("px_per_deg", 37.8)))
         self.radius = max(
@@ -201,13 +203,19 @@ class DvaModule:
             trial["timeout"] = 1
             trial["correct"] = 0
             self.feedback_text = "超时"
+            self.feedback_direction = ""
             self.feedback_color = (255, 200, 87)
         else:
             trial["response"] = response
             correct = response == trial["gap_dir"]
             trial["correct"] = 1 if correct else 0
             trial["rt_ms"] = max(0.0, (t - trial["start_t"]) * 1000.0)
-            self.feedback_text = "正确" if correct else f"错误，缺口朝{_DIR_NAMES[trial['gap_dir']]}"
+            self.feedback_text = (
+                "正确" if correct else "错误，缺口朝{direction}"
+            )
+            self.feedback_direction = (
+                "" if correct else _DIR_NAMES[trial["gap_dir"]]
+            )
             self.feedback_color = (
                 (57, 255, 136) if correct else (255, 79, 109)
             )
@@ -266,9 +274,17 @@ class DvaModule:
                 self.trial["gap_dir"],
             )
         elif self.state == "feedback" and self.feedback_text:
+            feedback = (
+                theme.tr(
+                    self.feedback_text,
+                    direction=theme.tr(self.feedback_direction),
+                )
+                if self.feedback_direction
+                else theme.tr(self.feedback_text)
+            )
             theme.text(
                 surf,
-                self.feedback_text,
+                feedback,
                 (cx, cy + height * 0.28),
                 size=22,
                 color=self.feedback_color,
@@ -277,7 +293,7 @@ class DvaModule:
             )
         theme.text(
             surf,
-            "方向键 / WASD 判断缺口方向",
+            theme.tr("方向键 / WASD 判断缺口方向"),
             (cx, top + height - 22 * theme.ui),
             size=14,
             color=theme.muted,

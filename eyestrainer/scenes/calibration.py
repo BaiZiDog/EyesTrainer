@@ -38,11 +38,13 @@ class CalibrationScene(Scene):
         self.buttons = {
             "back": Button(
                 pygame.Rect(int(30 * theme.ui), int(30 * theme.ui), int(120 * theme.ui), int(42 * theme.ui)),
-                "返回",
+                self.app.tr("返回"),
             ),
             "test": Button(
                 pygame.Rect(int(60 * theme.ui), int(430 * theme.ui), int(260 * theme.ui), int(48 * theme.ui)),
-                "重新自检" if self.result else "开始 5 秒性能自检",
+                self.app.tr(
+                    "重新自检" if self.result else "开始 5 秒性能自检"
+                ),
                 kind="primary",
             ),
         }
@@ -55,7 +57,7 @@ class CalibrationScene(Scene):
                     int(360 * theme.ui),
                     int(8 * theme.ui),
                 ),
-                "屏幕对角线（英寸）",
+                self.app.tr("屏幕对角线（英寸）"),
                 10.0,
                 80.0,
                 cal.screen_diagonal_in,
@@ -69,7 +71,7 @@ class CalibrationScene(Scene):
                     int(360 * theme.ui),
                     int(8 * theme.ui),
                 ),
-                "观看距离（厘米）",
+                self.app.tr("观看距离（厘米）"),
                 20.0,
                 200.0,
                 cal.view_distance_cm,
@@ -122,7 +124,7 @@ class CalibrationScene(Scene):
         if self.test_elapsed >= self.test_duration:
             self.test_running = False
             self.result = summarize_frames(self.samples)
-            self.buttons["test"].label = "重新自检"
+            self.buttons["test"].label = self.app.tr("重新自检")
 
     def draw(self, surface: pygame.Surface) -> None:
         theme = self.app.theme
@@ -132,7 +134,7 @@ class CalibrationScene(Scene):
         surface.fill(theme.bg)
         theme.text(
             surface,
-            "校准",
+            self.app.tr("校准"),
             (theme.width // 2, int(38 * theme.ui)),
             size=36,
             color=theme.text_color,
@@ -160,14 +162,36 @@ class CalibrationScene(Scene):
                 rates = list(raw)
         except Exception:
             rates = []
-        rate_text = ", ".join(str(int(v)) for v in rates) if rates else "未知"
+        rate_text = (
+            ", ".join(str(int(v)) for v in rates)
+            if rates
+            else self.app.tr("未知")
+        )
         lines = [
-            f"当前分辨率：{theme.width} × {theme.height}",
-            f"当前刷新率：{self.app.refresh_rate} Hz",
-            f"桌面刷新率列表：{rate_text}",
-            f"垂直同步：{'开' if self.app.settings.display.vsync else '关'}",
-            f"帧上限：{'跟随刷新率' if self.app.settings.display.fps_cap == 0 else self.app.settings.display.fps_cap}",
-            "性能自检只测量主循环帧时，不代表显示器到眼睛的完整延迟。",
+            self.app.tr(
+                "当前分辨率：{width} × {height}",
+                width=theme.width,
+                height=theme.height,
+            ),
+            self.app.tr("当前刷新率：{hz} Hz", hz=self.app.refresh_rate),
+            self.app.tr("桌面刷新率列表：{rates}", rates=rate_text),
+            self.app.tr(
+                "垂直同步：{state}",
+                state=self.app.tr(
+                    "开" if self.app.settings.display.vsync else "关"
+                ),
+            ),
+            self.app.tr(
+                "帧上限：{cap}",
+                cap=(
+                    self.app.tr("跟随刷新率")
+                    if self.app.settings.display.fps_cap == 0
+                    else self.app.settings.display.fps_cap
+                ),
+            ),
+            self.app.tr(
+                "性能自检只测量主循环帧时，不代表显示器到眼睛的完整延迟。"
+            ),
         ]
         for i, line in enumerate(lines):
             theme.text(
@@ -190,7 +214,9 @@ class CalibrationScene(Scene):
             )
             theme.text(
                 surface,
-                f"自检中… {self.test_elapsed:.1f}s",
+                self.app.tr(
+                    "自检中… {seconds}s", seconds=f"{self.test_elapsed:.1f}"
+                ),
                 (left, bar.bottom + int(12 * theme.ui)),
                 size=15,
                 color=theme.text_color,
@@ -203,14 +229,24 @@ class CalibrationScene(Scene):
             good = fps >= self.app.refresh_rate * 0.9
             theme.text(
                 surface,
-                f"平均 {fps:.0f} FPS　平均帧时 {avg:.1f}ms　p99 {p99:.1f}ms　最大 {max_ms:.1f}ms",
+                self.app.tr(
+                    "平均 {fps} FPS　平均帧时 {avg}ms　p99 {p99}ms　最大 {maximum}ms",
+                    fps=f"{fps:.0f}",
+                    avg=f"{avg:.1f}",
+                    p99=f"{p99:.1f}",
+                    maximum=f"{max_ms:.1f}",
+                ),
                 (left, int(500 * theme.ui)),
                 size=17,
                 color=theme.accent if good else theme.warning,
             )
             theme.text(
                 surface,
-                "帧时稳定，适合训练" if good else "帧时偏低：建议关闭垂直同步、降低分辨率或关闭后台程序",
+                self.app.tr(
+                    "帧时稳定，适合训练"
+                    if good
+                    else "帧时偏低：建议关闭垂直同步、降低分辨率或关闭后台程序"
+                ),
                 (left, int(532 * theme.ui)),
                 size=14,
                 color=theme.muted,
@@ -225,7 +261,7 @@ class CalibrationScene(Scene):
         )
         theme.text(
             surface,
-            "视觉角度换算",
+            self.app.tr("视觉角度换算"),
             (int(theme.width * 0.55), int(150 * theme.ui)),
             size=20,
             color=theme.text_color,
@@ -233,7 +269,7 @@ class CalibrationScene(Scene):
         )
         theme.text(
             surface,
-            f"约 {ppd:.1f} 像素 / 度",
+            self.app.tr("约 {ppd} 像素 / 度", ppd=f"{ppd:.1f}"),
             (int(theme.width * 0.55), int(180 * theme.ui)),
             size=17,
             color=theme.accent,
@@ -262,7 +298,7 @@ class CalibrationScene(Scene):
         )
         theme.text(
             surface,
-            "图中圆环约对应 1° 视角",
+            self.app.tr("图中圆环约对应 1° 视角"),
             (preview.centerx, preview.bottom - int(18 * theme.ui)),
             size=12,
             color=theme.muted,

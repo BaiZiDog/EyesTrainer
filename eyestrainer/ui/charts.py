@@ -29,7 +29,7 @@ def draw_line_chart(
     unit: str = "",
     x_labels: Sequence[str] | None = None,
     reference: float | None = None,
-    reference_label: str = "最佳",
+    reference_label: str | None = None,
 ) -> None:
     theme.panel_rect(surface, rect)
     inner = rect.inflate(-int(110 * theme.ui), -int(96 * theme.ui))
@@ -43,7 +43,7 @@ def draw_line_chart(
             bold=True,
         )
     if not values:
-        theme.text(surface, "暂无数据", inner.center, size=16, color=theme.muted, anchor="center")
+        theme.text(surface, theme.tr("暂无数据"), inner.center, size=16, color=theme.muted, anchor="center")
         return
     lo = min(values)
     hi = max(values)
@@ -86,7 +86,7 @@ def draw_line_chart(
         )
         theme.text(
             surface,
-            reference_label,
+            theme.tr(reference_label or "最佳"),
             (inner.left + int(6 * theme.ui), ref_y - int(4 * theme.ui)),
             size=12,
             color=theme.warning,
@@ -134,7 +134,7 @@ def draw_histogram(
         )
     bins_data = histogram(values, bins)
     if not bins_data:
-        theme.text(surface, "暂无数据", inner.center, size=16, color=theme.muted, anchor="center")
+        theme.text(surface, theme.tr("暂无数据"), inner.center, size=16, color=theme.muted, anchor="center")
         return
     max_count = max(count for _, _, count in bins_data) or 1
     bar_gap = max(1, int(2 * theme.ui))
@@ -164,7 +164,7 @@ def draw_histogram(
         )
         theme.text(
             surface,
-            f"中位数 {_fmt(med, unit)}",
+            theme.tr("中位数 {value}", value=_fmt(med, unit)),
             (inner.right, rect.top + int(12 * theme.ui)),
             size=12,
             color=theme.warning,

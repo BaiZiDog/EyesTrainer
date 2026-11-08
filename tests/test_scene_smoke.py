@@ -70,6 +70,36 @@ def test_module_select_clears_stale_mode_buttons(tmp_path, monkeypatch):
         app.storage.close()
 
 
+def test_language_switch_rebuilds_settings_and_menu(tmp_path, monkeypatch):
+    monkeypatch.setenv("EYESTRAINER_DATA_DIR", str(tmp_path / "data"))
+    app = App(windowed_override=True)
+    try:
+        from eyestrainer.scenes.menu import MenuScene
+        from eyestrainer.scenes.settings import SettingsScene
+
+        scene = SettingsScene(app)
+        app.push_scene(scene)
+        scene.tab = "language"
+        scene._layout()
+        assert scene.buttons["lang:zh"].selected
+        scene._choose_language("en")
+        assert app.settings.language == "en"
+        assert app.theme.lang == "en"
+        assert scene.buttons["back"].label == "Back"
+        assert scene.buttons["tab:language"].label == "Language"
+        assert scene.buttons["lang:en"].selected
+
+        app.pop_scene()
+        menu = app.current
+        assert isinstance(menu, MenuScene)
+        assert menu.buttons["start"].label == "Start training"
+        app.set_language("zh")
+        menu.on_enter()
+        assert menu.buttons["start"].label == "开始训练"
+    finally:
+        app.storage.close()
+
+
 def test_new_module_sessions_and_plans(tmp_path, monkeypatch):
     monkeypatch.setenv("EYESTRAINER_DATA_DIR", str(tmp_path / "data"))
     app = App(windowed_override=True)

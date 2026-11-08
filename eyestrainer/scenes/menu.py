@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 import pygame
 
+from ..config import APP_VERSION
 from ..ui.widgets import Button
 from .base import Scene
 
@@ -29,11 +30,11 @@ class MenuScene(Scene):
         x = int(theme.width * 0.56) - width // 2
         y = int(theme.height * 0.38)
         items = [
-            ("start", "开始训练", "primary"),
-            ("history", "历史记录", "secondary"),
-            ("settings", "设置", "secondary"),
-            ("calibration", "校准", "secondary"),
-            ("quit", "退出", "secondary"),
+            ("start", self.app.tr("开始训练"), "primary"),
+            ("history", self.app.tr("历史记录"), "secondary"),
+            ("settings", self.app.tr("设置"), "secondary"),
+            ("calibration", self.app.tr("校准"), "secondary"),
+            ("quit", self.app.tr("退出"), "secondary"),
         ]
         self.buttons = {}
         for key, label, kind in items:
@@ -127,14 +128,14 @@ class MenuScene(Scene):
         )
         theme.text(
             surface,
-            "FPS 视觉与反应训练",
+            self.app.tr("FPS 视觉与反应训练"),
             (int(theme.width * 0.10), int(theme.height * 0.28 + 74 * theme.ui)),
             size=24,
             color=theme.accent,
         )
         theme.text(
             surface,
-            "数据优先 · 相对鼠标瞄准 · 本地离线",
+            self.app.tr("数据优先 · 相对鼠标瞄准 · 本地离线"),
             (int(theme.width * 0.10), int(theme.height * 0.28 + 112 * theme.ui)),
             size=17,
             color=theme.muted,
@@ -147,14 +148,20 @@ class MenuScene(Scene):
         total_minutes = getattr(self, "_total_minutes", 0.0)
         theme.text(
             surface,
-            f"档案 {self.app.settings.profile}   ·   累计训练 {total_minutes:.0f} 分钟",
+            self.app.tr(
+                "档案 {profile}   ·   累计训练 {minutes} 分钟",
+                profile=self.app.settings.profile,
+                minutes=f"{total_minutes:.0f}",
+            ),
             (int(theme.width * 0.10), theme.height - int(58 * theme.ui)),
             size=15,
             color=theme.muted,
         )
         theme.text(
             surface,
-            "v0.5.0   ·   F3 帧率信息",
+            self.app.tr(
+                "v{version}   ·   F3 帧率信息", version=APP_VERSION
+            ),
             (int(theme.width * 0.10), theme.height - int(34 * theme.ui)),
             size=13,
             color=theme.muted,

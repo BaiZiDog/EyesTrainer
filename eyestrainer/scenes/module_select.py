@@ -71,7 +71,7 @@ class ModuleSelectScene(Scene):
         self.buttons: dict[str, Button] = {}
         self.fixed_slider = Slider(
             pygame.Rect(0, 0, 1, 1),
-            "固定难度",
+            app.tr("固定难度"),
             0,
             100,
             50,
@@ -80,7 +80,7 @@ class ModuleSelectScene(Scene):
         )
         self.sensitivity = Slider(
             pygame.Rect(0, 0, 1, 1),
-            "鼠标灵敏度",
+            app.tr("鼠标灵敏度"),
             0.1,
             5.0,
             app.settings.input.sensitivity,
@@ -112,7 +112,7 @@ class ModuleSelectScene(Scene):
         for module_id, label in _MODULE_CARDS:
             self.buttons[module_id] = Button(
                 pygame.Rect(x, y, card_w, card_h),
-                label,
+                theme.tr(label),
                 selected=self.options.module_id == module_id,
             )
             x += card_w + gap
@@ -126,12 +126,14 @@ class ModuleSelectScene(Scene):
         for i, mode in enumerate(modes):
             self.buttons[f"mode:{mode}"] = Button(
                 pygame.Rect(mode_x + i * (mode_w + gap), mode_y, mode_w, int(48 * theme.ui)),
-                _MODE_LABELS[mode],
+                theme.tr(_MODE_LABELS[mode]),
                 selected=self.options.mode == mode,
             )
         self.buttons["adaptive"] = Button(
             pygame.Rect(cx - int(200 * theme.ui), mode_y + int(72 * theme.ui), int(400 * theme.ui), int(46 * theme.ui)),
-            "自适应难度：开" if self.options.adaptive else "自适应难度：关",
+            theme.tr(
+                "自适应难度：开" if self.options.adaptive else "自适应难度：关"
+            ),
             selected=self.options.adaptive,
         )
         slider_y = mode_y + int(146 * theme.ui)
@@ -161,13 +163,16 @@ class ModuleSelectScene(Scene):
         self.fixed_slider.value = self.options.fixed_level
         self.buttons["start"] = Button(
             pygame.Rect(cx - int(180 * theme.ui), theme.height - int(150 * theme.ui), int(360 * theme.ui), int(56 * theme.ui)),
-            "开始训练",
+            theme.tr("开始训练"),
             kind="primary",
         )
         self.buttons["back"] = Button(
             pygame.Rect(int(30 * theme.ui), theme.height - int(78 * theme.ui), int(150 * theme.ui), int(44 * theme.ui)),
-            "返回",
+            theme.tr("返回"),
         )
+        self.fixed_slider.label = theme.tr("固定难度")
+        self.sensitivity.label = theme.tr("鼠标灵敏度")
+        self._compact = theme.height < 650
 
     def _refresh_stats(self) -> None:
         history = self.app.storage.history(
@@ -175,7 +180,7 @@ class ModuleSelectScene(Scene):
         )
         self._stats_lines = []
         if not history:
-            self._stats_lines.append("还没有该模式的训练记录")
+            self._stats_lines.append(self.app.tr("还没有该模式的训练记录"))
             return
         primary = metrics.primary_metric(self.options.module_id, self.options.mode, {})
         key = primary["key"]
@@ -184,12 +189,18 @@ class ModuleSelectScene(Scene):
         last_value = last.get(key)
         if last_value is not None:
             unit = primary["unit"]
-            self._stats_lines.append(f"上次：{float(last_value):.1f}{unit}")
+            self._stats_lines.append(
+                self.app.tr("上次：{value}", value=f"{float(last_value):.1f}{unit}")
+            )
         if values:
             best = max(values) if primary["higher_is_better"] else min(values)
             unit = primary["unit"]
-            self._stats_lines.append(f"最佳：{best:.1f}{unit}")
-        self._stats_lines.append(f"共 {len(history)} 次记录")
+            self._stats_lines.append(
+                self.app.tr("最佳：{value}", value=f"{best:.1f}{unit}")
+            )
+        self._stats_lines.append(
+            self.app.tr("共 {count} 次记录", count=len(history))
+        )
 
     def _set_module(self, module_id: str) -> None:
         self.options.module_id = module_id
@@ -240,7 +251,7 @@ class ModuleSelectScene(Scene):
                 elif self.buttons["adaptive"].hit(pos):
                     self.options.adaptive = not self.options.adaptive
                     self.buttons["adaptive"].selected = self.options.adaptive
-                    self.buttons["adaptive"].label = (
+                    self.buttons["adaptive"].label = self.app.tr(
                         "自适应难度：开" if self.options.adaptive else "自适应难度：关"
                     )
                     self.app.audio.play("click")
@@ -271,7 +282,7 @@ class ModuleSelectScene(Scene):
         surface.fill(theme.bg)
         theme.text(
             surface,
-            "选择训练",
+            self.app.tr("选择训练"),
             (theme.width // 2, int(52 * theme.ui)),
             size=40,
             color=theme.text_color,
@@ -280,7 +291,7 @@ class ModuleSelectScene(Scene):
         )
         theme.text(
             surface,
-            "四个模块：甩枪 · 追踪 · 动态视敏 · 周边视野",
+            self.app.tr("四个模块：甩枪 · 追踪 · 动态视敏 · 周边视野"),
             (theme.width // 2, int(102 * theme.ui)),
             size=17,
             color=theme.muted,
@@ -290,16 +301,19 @@ class ModuleSelectScene(Scene):
         for button in self.buttons.values():
             button.draw(surface, theme, mouse_pos)
 
-        desc = _DESCRIPTIONS.get(
-            (self.options.module_id, self.options.mode), ""
+        desc = theme.tr(
+            _DESCRIPTIONS.get((self.options.module_id, self.options.mode), "")
         )
+        compact = getattr(self, "_compact", False)
+        desc_width = int(720 * theme.ui)
+        desc_y = int(theme.height * (0.68 if compact else 0.55))
         draw_paragraph(
             surface,
             theme,
             desc,
-            (theme.width // 2 - int(320 * theme.ui), int(theme.height * 0.55)),
-            int(640 * theme.ui),
-            size=17,
+            (theme.width // 2 - desc_width // 2, desc_y),
+            desc_width,
+            size=15 if compact else 17,
             color=theme.muted,
         )
         if self._show_sensitivity:
@@ -308,7 +322,7 @@ class ModuleSelectScene(Scene):
             if self._show_sensitivity:
                 theme.text(
                     surface,
-                    "目标难度会在训练中自动调整",
+                    theme.tr("目标难度会在训练中自动调整"),
                     (theme.width // 2 + int(220 * theme.ui), self.fixed_slider.rect.top + int(6 * theme.ui)),
                     size=15,
                     color=theme.muted,
@@ -317,7 +331,7 @@ class ModuleSelectScene(Scene):
             else:
                 theme.text(
                     surface,
-                    "本模块使用键盘，不涉及鼠标灵敏度",
+                    theme.tr("本模块使用键盘，不涉及鼠标灵敏度"),
                     (theme.width // 2 - int(220 * theme.ui), self.fixed_slider.rect.top + int(6 * theme.ui)),
                     size=15,
                     color=theme.muted,
@@ -325,7 +339,7 @@ class ModuleSelectScene(Scene):
                 )
                 theme.text(
                     surface,
-                    "目标难度会在训练中自动调整",
+                    theme.tr("目标难度会在训练中自动调整"),
                     (theme.width // 2 + int(220 * theme.ui), self.fixed_slider.rect.top + int(6 * theme.ui)),
                     size=15,
                     color=theme.muted,
@@ -336,38 +350,39 @@ class ModuleSelectScene(Scene):
             if not self._show_sensitivity:
                 theme.text(
                     surface,
-                    "本模块使用键盘，不涉及鼠标灵敏度",
+                    theme.tr("本模块使用键盘，不涉及鼠标灵敏度"),
                     (theme.width // 2 - int(220 * theme.ui), self.fixed_slider.rect.top + int(6 * theme.ui)),
                     size=15,
                     color=theme.muted,
                     anchor="midtop",
                 )
 
-        panel = pygame.Rect(
-            theme.width // 2 - int(220 * theme.ui),
-            theme.height - int(272 * theme.ui),
-            int(440 * theme.ui),
-            int(100 * theme.ui),
-        )
-        theme.panel_rect(surface, panel)
-        theme.text(
-            surface,
-            "个人记录",
-            (panel.left + int(16 * theme.ui), panel.top + int(10 * theme.ui)),
-            size=14,
-            color=theme.muted,
-        )
-        for i, line in enumerate(self._stats_lines[:3]):
+        if not compact:
+            panel = pygame.Rect(
+                theme.width // 2 - int(220 * theme.ui),
+                theme.height - int(272 * theme.ui),
+                int(440 * theme.ui),
+                int(100 * theme.ui),
+            )
+            theme.panel_rect(surface, panel)
             theme.text(
                 surface,
-                line,
-                (panel.left + int(16 * theme.ui), panel.top + int(32 * theme.ui + i * 20 * theme.ui)),
-                size=16,
-                color=theme.text_color,
+                theme.tr("个人记录"),
+                (panel.left + int(16 * theme.ui), panel.top + int(10 * theme.ui)),
+                size=14,
+                color=theme.muted,
             )
+            for i, line in enumerate(self._stats_lines[:3]):
+                theme.text(
+                    surface,
+                    line,
+                    (panel.left + int(16 * theme.ui), panel.top + int(32 * theme.ui + i * 20 * theme.ui)),
+                    size=16,
+                    color=theme.text_color,
+                )
         theme.text(
             surface,
-            "Esc 返回",
+            theme.tr("Esc 返回"),
             (theme.width // 2, theme.height - int(34 * theme.ui)),
             size=13,
             color=theme.muted,
