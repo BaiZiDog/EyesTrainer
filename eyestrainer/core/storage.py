@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
+from ..config import APP_VERSION
 from . import metrics
 from .motion import decode_blob
 
@@ -143,7 +144,7 @@ def utc_now() -> str:
 
 
 class Storage:
-    def __init__(self, db_path: Path, app_version: str = "0.5.0") -> None:
+    def __init__(self, db_path: Path, app_version: str = APP_VERSION) -> None:
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self.app_version = app_version

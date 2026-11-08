@@ -3,8 +3,8 @@
 ; The onefile application EXE must exist at dist\EyesTrainer.exe.
 
 #define MyAppName "EyesTrainer"
-#define MyAppVersion "0.5.0"
-#define MyAppVersionInfo "0.5.0.0"
+#define MyAppVersion "0.5.1"
+#define MyAppVersionInfo "0.5.1.0"
 #define MyAppPublisher "BaiZiDog"
 #define MyAppURL "https://github.com/BaiZiDog/EyesTrainer"
 #define MyAppExeName "EyesTrainer.exe"

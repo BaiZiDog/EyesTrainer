@@ -4,7 +4,7 @@
 
 ## 下载与安装
 
-从 [GitHub Releases](https://github.com/BaiZiDog/EyesTrainer/releases) 下载 `EyesTrainer-Setup-0.5.0.exe`，双击安装。安装包由 Inno Setup 6 生成，支持开始菜单和可选桌面快捷方式。
+从 [GitHub Releases](https://github.com/BaiZiDog/EyesTrainer/releases) 下载 `EyesTrainer-Setup-0.5.1.exe`，双击安装。安装包由 Inno Setup 6 生成，支持开始菜单和可选桌面快捷方式。
 
 - 安装版数据保存在 `%APPDATA%\EyesTrainer\`，升级和卸载都不会删除训练记录。
 - 安装向导会显示中英双语 MIT 许可协议。
@@ -53,7 +53,7 @@ build_exe.bat
 build_installer.bat
 ```
 
-`build_exe.bat` 使用 Nuitka onefile 模式生成 `dist\EyesTrainer.exe`；`build_installer.bat` 调用 Inno Setup 6 生成 `dist\EyesTrainer-Setup-0.5.0.exe`。构建使用 Zig 作为 C 编译器（Nuitka 4.x 在 Python 3.13 下不再支持 MinGW64）；需要本机有 `zig` 或让 Nuitka 下载，且 `.venv` 内已安装 Nuitka：
+`build_exe.bat` 使用 Nuitka onefile 模式生成 `dist\EyesTrainer.exe`；`build_installer.bat` 调用 Inno Setup 6 生成 `dist\EyesTrainer-Setup-0.5.1.exe`。构建使用 Zig 作为 C 编译器（Nuitka 4.x 在 Python 3.13 下不再支持 MinGW64）；需要本机有 `zig` 或让 Nuitka 下载，且 `.venv` 内已安装 Nuitka：
 
 ```bash
 .venv/Scripts/python.exe -m pip install -e ".[build]"

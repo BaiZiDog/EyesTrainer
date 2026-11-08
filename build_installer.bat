@@ -20,5 +20,5 @@ if not exist "dist\EyesTrainer.exe" (
 "%ISCC%" "installer\EyesTrainer.iss"
 if errorlevel 1 exit /b 1
 echo.
-echo [EyesTrainer] Installer written to dist\EyesTrainer-Setup-0.5.0.exe
+echo [EyesTrainer] Installer written to dist\EyesTrainer-Setup-0.5.1.exe
 endlocal

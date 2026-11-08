@@ -10,7 +10,7 @@ from typing import Any
 from .core.i18n import DEFAULT_LANGUAGE, normalize_language
 
 APP_NAME = "EyesTrainer"
-APP_VERSION = "0.5.0"
+APP_VERSION = "0.5.1"
 
 _CROSSHAIR_STYLES = {"cross_dot", "dot", "cross"}
 _VALID_COLORS = {"#39FF88", "#4FA3FF", "#FFD166", "#FFFFFF", "#FF4F6D"}
