@@ -21,8 +21,8 @@ if not exist ".venv\Scripts\python.exe" (
     --company-name=BaiZiDog ^
     --product-name=EyesTrainer ^
     --copyright="Copyright (C) 2026 BaiZiDog" ^
-    --file-version=0.5.1.0 ^
-    --product-version=0.5.1.0 ^
+    --file-version=1.0.0.0 ^
+    --product-version=1.0.0.0 ^
     --file-description="FPS visual and reaction trainer" ^
     main.py
 

@@ -1,10 +1,10 @@
-# EyesTrainer v0.5.1
+# EyesTrainer v1.0.0
 
-面向 FPS 玩家的本地视觉-运动训练器，新增中英双语界面。
+面向 FPS 玩家的本地视觉-运动训练器，首个正式版。
 
 ## 下载
 
-- `EyesTrainer-Setup-0.5.1.exe` — Inno Setup 安装包（推荐）
+- `EyesTrainer-Setup-1.0.0.exe` — Inno Setup 安装包（推荐）
 - `EyesTrainer.exe` — Nuitka onefile 便携版
 - `SHA256SUMS.txt` — 产物校验值
 - `EyesTrainer-Portable-README.txt` — 便携版数据目录说明
@@ -12,20 +12,20 @@
 
 ## 安装
 
-1. 运行 `EyesTrainer-Setup-0.5.1.exe`。
+1. 运行 `EyesTrainer-Setup-1.0.0.exe`。
 2. 阅读并接受中英双语 MIT 许可协议。
 3. 按向导选择安装位置；默认按当前用户安装到 `%LOCALAPPDATA%\Programs\EyesTrainer`。
 4. 安装完成后可直接启动。
 
 安装包未做代码签名，Windows SmartScreen 可能提示；可选择“更多信息 → 仍要运行”。
 
-## 本版新增
+## 首个正式版内容
 
 - **中文 / English 界面切换**：设置页新增“语言 / Language”标签，切换立即生效并保存。
 - 主菜单、模块选择、训练提示、暂停/休息、结算、历史、校准、护眼提醒和 Windows 系统通知同步切换语言。
 - 英文界面针对窄窗口压缩指标标签；小尺寸窗口下隐藏模块选择页的个人记录面板，避免文字重叠。
 - 保留 v0.5.0 的中英双语许可、系统托盘通知、四训练模块和 SQLite schema v3。
-- 版本号升级到 v0.5.1。
+- 版本号正式升级到 v1.0.0，作为首个正式版。
 
 ## 数据目录
 
